@@ -1,0 +1,36 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+dist/
+redis-server
+
+# Test binary, output & coverage
+*.test
+*.out
+coverage.txt
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Dependency directories (if using vendor mode)
+# vendor/
+
+# Environment files
+.env
+.env.local
+
+# IDEs and Editors
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Operating System files
+.DS_Store
+Thumbs.db
