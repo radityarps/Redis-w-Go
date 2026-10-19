@@ -1,10 +1,15 @@
 package main
 
-import "sort"
+import (
+	"errors"
+	"sort"
+)
 
 type Store struct {
 	data map[string]string
 }
+
+var ErrEmptyKey = errors.New("key cannot be empty")
 
 func NewStore() *Store {
 	return &Store{
@@ -22,9 +27,12 @@ func (s *Store) Keys() []string {
 	return keys
 }
 
-func (s *Store) Get(key string) (string, bool) {
+func (s *Store) Get(key string) (string, error) {
 	val, ok := s.data[key]
-	return val, ok
+	if !ok {
+		return "", ErrEmptyKey
+	}
+	return val, nil
 }
 
 func (s *Store) Set(key, value string) {

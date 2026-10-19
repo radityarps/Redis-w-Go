@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"slices"
 	"testing"
 )
@@ -62,17 +63,23 @@ func TestSetGet_RoundTrip(t *testing.T) {
 	s := NewStore()
 	s.Set("key1", "val1")
 
-	if val, ok := s.Get("key1"); !ok || val != "val1" {
-		t.Errorf("expected key to be found with value 'val1', got '%s' %v", val, ok)
+	if val, err := s.Get("key1"); err != nil || val != "val1" {
+		t.Errorf("expected key to be found with value 'val1', got '%s' %v", val, err)
 	}
 
-	if val, ok := s.Get("missing"); ok || val != "" {
-		t.Errorf("expected key to be not found, got '%s' %v", val, ok)
+	if val, err := s.Get("missing"); err == nil || val != "" {
+		t.Errorf("expected key to be not found, got '%s' %v", val, err)
+	}
+}
+
+func TestSetGet_EmptyKeys(t *testing.T) {
+	s := NewStore()
+	if _, err := s.Get(""); err == nil && !errors.Is(err, ErrEmptyKey) {
+		t.Errorf("Get() failed: %v", err)
 	}
 }
 
 // TableTests
-
 func TestDelete(t *testing.T) {
 	tests := []struct {
 		name        string
@@ -123,8 +130,8 @@ func TestDelete(t *testing.T) {
 			if s.Len() != test.expectedLen {
 				t.Errorf("expected %d keys, got %d", test.expectedLen, s.Len())
 			}
-			if _, ok := s.Get(test.deleteKey); ok {
-				t.Errorf("expected key to be deleted, got %v", ok)
+			if _, err := s.Get(test.deleteKey); err == nil {
+				t.Errorf("expected key to be deleted, got %v", err)
 			}
 		})
 	}
