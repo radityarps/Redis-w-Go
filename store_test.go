@@ -8,7 +8,7 @@ import (
 
 func TestStore_Keys(t *testing.T) {
 	t.Run("returns empty slice when store is empty", func(t *testing.T) {
-		s := NewStore()
+		s := NewStore(0)
 		keys := s.Keys()
 
 		if len(keys) != 0 {
@@ -17,7 +17,7 @@ func TestStore_Keys(t *testing.T) {
 	})
 
 	t.Run("returns single key", func(t *testing.T) {
-		s := NewStore()
+		s := NewStore(0)
 		s.Set("key1", "val1")
 
 		keys := s.Keys()
@@ -29,7 +29,7 @@ func TestStore_Keys(t *testing.T) {
 	})
 
 	t.Run("returns keys in ascending sorted order", func(t *testing.T) {
-		s := NewStore()
+		s := NewStore(0)
 		s.Set("banana", "1")
 		s.Set("apple", "2")
 		s.Set("date", "3")
@@ -44,7 +44,7 @@ func TestStore_Keys(t *testing.T) {
 	})
 
 	t.Run("returns sorted keys correctly after deletion", func(t *testing.T) {
-		s := NewStore()
+		s := NewStore(0)
 		s.Set("b", "1")
 		s.Set("a", "2")
 		s.Set("c", "3")
@@ -60,7 +60,7 @@ func TestStore_Keys(t *testing.T) {
 }
 
 func TestSetGet_RoundTrip(t *testing.T) {
-	s := NewStore()
+	s := NewStore(0)
 	s.Set("key1", "val1")
 
 	if val, err := s.Get("key1"); err != nil || val != "val1" {
@@ -73,7 +73,7 @@ func TestSetGet_RoundTrip(t *testing.T) {
 }
 
 func TestSetGet_EmptyKeys(t *testing.T) {
-	s := NewStore()
+	s := NewStore(0)
 	if _, err := s.Get(""); err == nil && !errors.Is(err, ErrEmptyKey) {
 		t.Errorf("Get() failed: %v", err)
 	}
@@ -122,7 +122,7 @@ func TestDelete(t *testing.T) {
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			s := NewStore()
+			s := NewStore(0)
 			for k, v := range test.setup {
 				s.Set(k, v)
 			}
