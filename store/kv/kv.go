@@ -1,7 +1,7 @@
-package main
+package kv
 
 import (
-	"errors"
+	"redis/store"
 	"sort"
 )
 
@@ -9,9 +9,6 @@ type Store struct {
 	data    map[string]string
 	maxKeys int
 }
-
-var ErrEmptyKey = errors.New("key cannot be empty")
-var ErrMaxKeysExceeded = errors.New("max keys exceeded")
 
 func NewStore(maxKeys int) *Store {
 	return &Store{
@@ -33,18 +30,18 @@ func (s *Store) Keys() []string {
 func (s *Store) Get(key string) (string, error) {
 	val, ok := s.data[key]
 	if !ok {
-		return "", ErrEmptyKey
+		return "", store.ErrEmptyKey
 	}
 	return val, nil
 }
 
 func (s *Store) Set(key, value string) error {
 	if key == "" {
-		return ErrEmptyKey
+		return store.ErrEmptyKey
 	}
 	_, exists := s.data[key]
 	if s.Len() >= s.maxKeys && s.maxKeys > 0 && !exists {
-		return ErrMaxKeysExceeded
+		return store.ErrMaxKeysExceeded
 	}
 	s.data[key] = value
 	return nil

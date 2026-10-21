@@ -1,18 +1,34 @@
 package main
 
-import "fmt"
+import (
+	"encoding/base64"
+	"fmt"
+	"redis/store"
+	"redis/store/kv"
+	"redis/store/ttl"
+	"time"
+)
 
 func main() {
-	s := NewStore(2)
-	s.Set("a", "1")
-	s.Set("b", "2")
-	err := s.Set("3", "3")
+	keyValueStore := kv.NewStore(20)
+	encrypted, err := SetKeyWithEncryption(keyValueStore, "a", "1")
 	if err != nil {
 		fmt.Printf("%v", err)
 	}
-	// val, err := s.Get("a")
-	// delete(s.data, "a")
-	// val2, err2 := s.Get("a")
-	// fmt.Println(val, err)
-	// fmt.Println(val2, err2)
+	fmt.Println(encrypted)
+
+	ttlStore := ttl.NewTTLStore(2 * time.Second)
+	encryptedTtlValue, err := SetKeyWithEncryption(ttlStore, "a", "1")
+	if err != nil {
+		fmt.Printf("%v", err)
+	}
+	fmt.Println(encryptedTtlValue)
+}
+
+func SetKeyWithEncryption(store store.Storer, key, value string) (string, error) {
+	encoded := base64.StdEncoding.EncodeToString([]byte(value))
+	if err := store.Set(key, encoded); err != nil {
+		return "", err
+	}
+	return store.Get(key)
 }

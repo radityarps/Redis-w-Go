@@ -1,7 +1,8 @@
-package main
+package kv
 
 import (
 	"errors"
+	"redis/store"
 	"slices"
 	"testing"
 )
@@ -74,7 +75,7 @@ func TestSetGet_RoundTrip(t *testing.T) {
 
 func TestSetGet_EmptyKeys(t *testing.T) {
 	s := NewStore(0)
-	if _, err := s.Get(""); err == nil && !errors.Is(err, ErrEmptyKey) {
+	if _, err := s.Get(""); err == nil && !errors.Is(err, store.ErrEmptyKey) {
 		t.Errorf("Get() failed: %v", err)
 	}
 }
