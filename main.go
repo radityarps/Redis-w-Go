@@ -5,24 +5,23 @@ import (
 	"fmt"
 	"redis/store"
 	"redis/store/kv"
-	"redis/store/ttl"
-	"time"
 )
 
 func main() {
 	keyValueStore := kv.NewStore(20)
-	encrypted, err := SetKeyWithEncryption(keyValueStore, "a", "1")
+	logger := NewLoggingMiddleware(keyValueStore)
+	_, err := SetKeyWithEncryption(logger, "a", "1")
 	if err != nil {
 		fmt.Printf("%v", err)
+		return
 	}
-	fmt.Println(encrypted)
 
-	ttlStore := ttl.NewTTLStore(2 * time.Second)
-	encryptedTtlValue, err := SetKeyWithEncryption(ttlStore, "a", "1")
-	if err != nil {
-		fmt.Printf("%v", err)
-	}
-	fmt.Println(encryptedTtlValue)
+	// ttlStore := ttl.NewTTLStore(2 * time.Second)
+	// encryptedTtlValue, err := SetKeyWithEncryption(ttlStore, "a", "1")
+	// if err != nil {
+	// 	fmt.Printf("%v", err)
+	// }
+	// fmt.Println(encryptedTtlValue)
 }
 
 func SetKeyWithEncryption(store store.Storer, key, value string) (string, error) {
@@ -30,5 +29,6 @@ func SetKeyWithEncryption(store store.Storer, key, value string) (string, error)
 	if err := store.Set(key, encoded); err != nil {
 		return "", err
 	}
+	store.Len()
 	return store.Get(key)
 }

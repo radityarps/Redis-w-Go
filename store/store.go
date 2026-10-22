@@ -10,5 +10,5 @@ type Storer interface {
 	Set(key, value string) error
 	Delete(key string)
 	Len() int
-	// Keys() []string
+	Keys() []string
 }
