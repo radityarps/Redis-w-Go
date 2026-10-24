@@ -17,6 +17,17 @@ func NewStore(maxKeys int) *Store {
 	}
 }
 
+func (s *Store) Clone() *Store {
+	clone := &Store{
+		data:    make(map[string]string, len(s.data)),
+		maxKeys: s.maxKeys,
+	}
+	for key, value := range s.data {
+		clone.data[key] = value
+	}
+	return clone
+}
+
 // list keys in sorted order
 func (s *Store) Keys() []string {
 	keys := make([]string, 0, s.Len())

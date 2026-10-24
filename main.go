@@ -9,19 +9,25 @@ import (
 
 func main() {
 	keyValueStore := kv.NewStore(20)
-	logger := NewLoggingMiddleware(keyValueStore)
-	_, err := SetKeyWithEncryption(logger, "a", "1")
-	if err != nil {
-		fmt.Printf("%v", err)
-		return
-	}
+	PopulateDefaults(keyValueStore)
+	newStore := keyValueStore.Clone()
+	newStore.Set("env", "production")
+	fmt.Println(keyValueStore)
+	fmt.Println(newStore)
+}
 
-	// ttlStore := ttl.NewTTLStore(2 * time.Second)
-	// encryptedTtlValue, err := SetKeyWithEncryption(ttlStore, "a", "1")
-	// if err != nil {
-	// 	fmt.Printf("%v", err)
-	// }
-	// fmt.Println(encryptedTtlValue)
+func PopulateDefaults(store store.Storer) error {
+	defaults := map[string]string{
+		"env":   "development",
+		"ver":   "1.0.0",
+		"debug": "true",
+	}
+	for key, value := range defaults {
+		if err := store.Set(key, value); err != nil {
+			return fmt.Errorf("PopulateDefaults: %w", err)
+		}
+	}
+	return nil
 }
 
 func SetKeyWithEncryption(store store.Storer, key, value string) (string, error) {
