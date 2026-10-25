@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"redis/store"
 	"sync"
 )
@@ -13,27 +14,41 @@ type Command struct {
 }
 
 // dispatch is a tiny switch that turns a Command into a store cell
-func dispatch(s store.Storer, c Command) {
+func dispatch(s store.Storer, c Command) error {
 	switch c.Op {
 	case "SET":
-		s.Set(c.Key, c.Value)
+		return s.Set(c.Key, c.Value)
 	case "GET":
-		s.Get(c.Key)
+		_, err := s.Get(c.Key)
+		return err
 	case "INCR":
-		s.Incr(c.Key)
+		_, err := s.Incr(c.Key)
+		return err
+	default:
+		return fmt.Errorf("unknown op: %s", c.Op)
 	}
 }
 
 // RestoreOnBoot replays a slice of command against a store
 func RestoreOnBoot(s store.Storer, cmds []Command) {
 	var wg sync.WaitGroup
+	errs := make(chan error, len(cmds))
 
 	for _, c := range cmds {
 		wg.Go(
 			func() {
-				dispatch(s, c)
+				errs <- dispatch(s, c)
 			},
 		)
 	}
-	wg.Wait()
+	go func() {
+		wg.Wait()
+		close(errs)
+	}()
+
+	for err := range errs {
+		if err != nil {
+			fmt.Printf("%v\n", err)
+		}
+	}
 }

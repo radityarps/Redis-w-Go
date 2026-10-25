@@ -13,6 +13,9 @@ func main() {
 	for i := range cmds {
 		cmds[i] = Command{Op: "INCR", Key: "pageviews"}
 	}
+
+	cmds = append(cmds, Command{Op: "INCR", Key: ""}, Command{Op: "WAT", Key: "pageviews"})
+
 	RestoreOnBoot(s, cmds)
 	got, _ := s.Get("pageviews")
 
