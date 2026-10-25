@@ -19,17 +19,19 @@ func dispatch(s store.Storer, c Command) {
 		s.Set(c.Key, c.Value)
 	case "GET":
 		s.Get(c.Key)
+	case "INCR":
+		s.Incr(c.Key)
 	}
 }
 
 // RestoreOnBoot replays a slice of command against a store
 func RestoreOnBoot(s store.Storer, cmds []Command) {
 	var wg sync.WaitGroup
+
 	for _, c := range cmds {
 		wg.Go(
 			func() {
 				dispatch(s, c)
-				wg.Done()
 			},
 		)
 	}
