@@ -1,40 +1,23 @@
 package main
 
 import (
-	"encoding/base64"
 	"fmt"
-	"redis/store"
 	"redis/store/kv"
 )
 
 func main() {
-	keyValueStore := kv.NewStore(20)
-	PopulateDefaults(keyValueStore)
-	newStore := keyValueStore.Clone()
-	newStore.Set("env", "production")
-	fmt.Println(keyValueStore)
-	fmt.Println(newStore)
-}
+	cmds := []Command{
+		{Op: "SET", Key: "env", Value: "production"},
+		{Op: "SET", Key: "ver", Value: "1.0.0"},
+		{Op: "SET", Key: "debug", Value: "true"},
+		{Op: "GET", Key: "env"},
+		{Op: "SET", Key: "region", Value: "eu-west-1"},
+		{Op: "GET", Key: "debug"},
+	}
 
-func PopulateDefaults(store store.Storer) error {
-	defaults := map[string]string{
-		"env":   "development",
-		"ver":   "1.0.0",
-		"debug": "true",
-	}
-	for key, value := range defaults {
-		if err := store.Set(key, value); err != nil {
-			return fmt.Errorf("PopulateDefaults: %w", err)
-		}
-	}
-	return nil
-}
+	s := kv.NewStore(0)
+	RestoreOnBoot(s, cmds)
+	fmt.Println("restored, store size:", s.Len())
+	fmt.Println("keys:", s.Keys())
 
-func SetKeyWithEncryption(store store.Storer, key, value string) (string, error) {
-	encoded := base64.StdEncoding.EncodeToString([]byte(value))
-	if err := store.Set(key, encoded); err != nil {
-		return "", err
-	}
-	store.Len()
-	return store.Get(key)
 }
