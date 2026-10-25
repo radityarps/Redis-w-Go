@@ -1,6 +1,8 @@
 package main
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"redis/store"
 	"sync"
@@ -30,14 +32,19 @@ func dispatch(s store.Storer, c Command) error {
 }
 
 // RestoreOnBoot replays a slice of command against a store
-func RestoreOnBoot(s store.Storer, cmds []Command) {
+func RestoreOnBoot(ctx context.Context, s store.Storer, cmds []Command) error {
 	var wg sync.WaitGroup
 	errs := make(chan error, len(cmds))
 
 	for _, c := range cmds {
 		wg.Go(
 			func() {
-				errs <- dispatch(s, c)
+				select {
+				case <-ctx.Done():
+					errs <- ctx.Err()
+				default:
+					errs <- dispatch(s, c)
+				}
 			},
 		)
 	}
@@ -45,10 +52,15 @@ func RestoreOnBoot(s store.Storer, cmds []Command) {
 		wg.Wait()
 		close(errs)
 	}()
+	var allErrs []error
 
 	for err := range errs {
 		if err != nil {
-			fmt.Printf("%v\n", err)
+			allErrs = append(allErrs, err)
 		}
 	}
+	if len(allErrs) > 0 {
+		return errors.Join(allErrs...)
+	}
+	return nil
 }
